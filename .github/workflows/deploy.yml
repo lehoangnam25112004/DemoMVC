@@ -29,7 +29,9 @@ jobs:
         run: |
           echo "<html><body><h1>Website dang bao tri va nang cap...</h1></body></html>" > app_offline.htm
           curl -s --ftp-pasv -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -T app_offline.htm "ftp://${{ secrets.FTP_SERVER }}/www.lehoangnam.somee.com/app_offline.htm" || true
-
+          echo "Dung 10 giay de IIS giai phong khoa file..."
+          sleep 10
+          
       # 5. DEPLOY CODE: Upload code thẳng vào thư mục www.lehoangnam.somee.com/
       - name: 🚀 Deploy App
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
