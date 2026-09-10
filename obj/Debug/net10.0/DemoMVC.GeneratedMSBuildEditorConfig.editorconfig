@@ -30,8 +30,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Users/OSAKA/Downloads/PTPMQL/DemoMVC/Views/Les5/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVzNVxDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Users/OSAKA/Downloads/PTPMQL/DemoMVC/Views/Les5/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVzNVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Users/OSAKA/Downloads/PTPMQL/DemoMVC/Views/Lesson/Lesson4.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVzc29uXExlc3NvbjQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Users/OSAKA/Downloads/PTPMQL/DemoMVC/Views/Lesson/Lesson5.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVzc29uXExlc3NvbjUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Users/OSAKA/Downloads/PTPMQL/DemoMVC/Views/Shared/Error.cshtml]
