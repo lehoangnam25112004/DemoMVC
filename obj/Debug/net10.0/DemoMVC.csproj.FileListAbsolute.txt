@@ -96,7 +96,6 @@ D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\refint\DemoMVC.dll
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\DemoMVC.pdb
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\DemoMVC.genruntimeconfig.cache
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\ref\DemoMVC.dll
-D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\compressed\nh9po7fu0c-{0}-1fknpusi2r-1fknpusi2r.gz
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\bin\Debug\net10.0\Azure.Core.dll
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\bin\Debug\net10.0\Azure.Identity.dll
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\bin\Debug\net10.0\Bogus.dll
@@ -372,3 +371,4 @@ D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\bin\Debug\net10.0\runtimes\win-x86\nativ
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\bin\Debug\net10.0\runtimes\win\lib\net10.0\System.Security.Cryptography.Pkcs.dll
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\DemoMVC.csproj.AssemblyReference.cache
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\DemoMVC.csproj.Up2Date
+D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\compressed\nh9po7fu0c-{0}-czdeq39l1f-czdeq39l1f.gz
