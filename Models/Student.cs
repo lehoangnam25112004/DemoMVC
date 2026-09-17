@@ -9,3 +9,4 @@ namespace DemoMVC.Models
         public string? University { get; set; }
     }
 }
+
