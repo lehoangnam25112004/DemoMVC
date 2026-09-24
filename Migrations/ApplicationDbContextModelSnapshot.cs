@@ -19,12 +19,17 @@ namespace DemoMVC.Migrations
             modelBuilder.Entity("DemoMVC.Models.Person", b =>
                 {
                     b.Property<string>("FullName")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.HasKey("FullName");
