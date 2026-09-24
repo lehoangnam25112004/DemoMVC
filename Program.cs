@@ -30,6 +30,21 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {   
+        var dbContext = services.GetRequiredService<ApplicationDbContext>(); 
+        
+        dbContext.Database.Migrate(); 
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Đã xảy ra lỗi khi tự động chạy Migration trên Server.");
+    }
+}
 
 app.Run();
 
