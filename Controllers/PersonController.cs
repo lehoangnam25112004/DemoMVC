@@ -19,13 +19,18 @@ namespace DemoMVC.Controllers
             _context = context;
         }
 
-        // GET: Person
+        // 1. GET: Person (Lấy dữ liệu từ cả 2 bảng Person và Department)
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Persons.ToListAsync());
+            var persons = await _context.Persons
+                .Include(p => p.Department) // LINQ Join lấy thông tin Phòng ban
+                .AsNoTracking()
+                .ToListAsync();
+
+            return View(persons);
         }
 
-        // GET: Person/Details/5
+        // 2. GET: Person/Details/5
         public async Task<IActionResult> Details(string id)
         {
             if (id == null)
@@ -34,7 +39,9 @@ namespace DemoMVC.Controllers
             }
 
             var person = await _context.Persons
+                .Include(p => p.Department) // Bổ sung Include để xem được Tên phòng ban
                 .FirstOrDefaultAsync(m => m.FullName == id);
+
             if (person == null)
             {
                 return NotFound();
@@ -43,18 +50,19 @@ namespace DemoMVC.Controllers
             return View(person);
         }
 
-        // GET: Person/Create
+        // 3. GET: Person/Create
         public IActionResult Create()
         {
+            // Truyền danh sách Phòng ban sang View để làm DropdownList
+            ViewData["DepartmentId"] = new SelectList(_context.Departments, "DepartmentId", "DepartmentName");
             return View();
         }
 
-        // POST: Person/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // 4. POST: Person/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FullName,Address,Email")] Person person)
+        // Thêm DepartmentId vào Bind
+        public async Task<IActionResult> Create([Bind("FullName,Address,Email,DepartmentId")] Person person) 
         {
             if (ModelState.IsValid)
             {
@@ -62,10 +70,12 @@ namespace DemoMVC.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            // Nếu lỗi, nạp lại danh sách phòng ban cho DropdownList
+            ViewData["DepartmentId"] = new SelectList(_context.Departments, "DepartmentId", "DepartmentName", person.DepartmentId);
             return View(person);
         }
 
-        // GET: Person/Edit/5
+        // 5. GET: Person/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
             if (id == null)
@@ -78,15 +88,16 @@ namespace DemoMVC.Controllers
             {
                 return NotFound();
             }
+            // Truyền danh sách Phòng ban và chọn sẵn giá trị hiện tại
+            ViewData["DepartmentId"] = new SelectList(_context.Departments, "DepartmentId", "DepartmentName", person.DepartmentId);
             return View(person);
         }
 
-        // POST: Person/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // 6. POST: Person/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("FullName,Address,Email")] Person person)
+        // Thêm DepartmentId vào Bind
+        public async Task<IActionResult> Edit(string id, [Bind("FullName,Address,Email,DepartmentId")] Person person)
         {
             if (id != person.FullName)
             {
@@ -113,10 +124,11 @@ namespace DemoMVC.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["DepartmentId"] = new SelectList(_context.Departments, "DepartmentId", "DepartmentName", person.DepartmentId);
             return View(person);
         }
 
-        // GET: Person/Delete/5
+        // 7. GET: Person/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
@@ -125,7 +137,9 @@ namespace DemoMVC.Controllers
             }
 
             var person = await _context.Persons
+                .Include(p => p.Department) // Bổ sung Include để hiển thị thông tin Phòng ban trước khi xóa
                 .FirstOrDefaultAsync(m => m.FullName == id);
+
             if (person == null)
             {
                 return NotFound();
@@ -134,7 +148,7 @@ namespace DemoMVC.Controllers
             return View(person);
         }
 
-        // POST: Person/Delete/5
+        // 8. POST: Person/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)

@@ -21,7 +21,10 @@
             <th>
                 @Html.DisplayNameFor(model => model.Email)
             </th>
-            <th></th>
+            <th>
+                Phòng ban <!-- Thêm tiêu đề cột Phòng ban -->
+            </th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -35,6 +38,10 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                <!-- Hiển thị tên phòng ban liên kết -->
+                @Html.DisplayFor(modelItem => item.Department.DepartmentName)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.FullName">Edit</a> |
