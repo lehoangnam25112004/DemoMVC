@@ -39,6 +39,43 @@ namespace DemoMVC.Data
             }
 
             context.SaveChanges();
+
+            var majorList = context.Majors.OrderBy(m => m.MajorId).ToList();
+            if (majorList.Count == 0)
+            {
+                return;
+            }
+
+            var totalStudents = context.Students.Count();
+            if (totalStudents >= 200)
+            {
+                return;
+            }
+
+            var sequenceStart = totalStudents + 1;
+            const int admissionYear = 2027;
+            const string trainingSystemCode = "24";
+
+            for (int i = 0; i < 200 - totalStudents; i++)
+            {
+                var major = majorList[(sequenceStart + i - 1) % majorList.Count];
+                var studentNumber = sequenceStart + i;
+                var student = new Student
+                {
+                    StudentCode = $"{admissionYear % 100:D2}{trainingSystemCode}{major.MajorCode}{studentNumber:D4}",
+                    FullName = $"Sinh viên {studentNumber}",
+                    Address = $"Địa chỉ {studentNumber}",
+                    Email = $"student{studentNumber}@demo.com",
+                    AdmissionYear = admissionYear,
+                    TrainingSystemCode = trainingSystemCode,
+                    MajorCode = major.MajorCode,
+                    MajorId = major.MajorId
+                };
+
+                context.Students.Add(student);
+            }
+
+            context.SaveChanges();
         }
     }
 }
