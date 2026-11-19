@@ -372,3 +372,4 @@ D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\bin\Debug\net10.0\runtimes\win\lib\net10
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\DemoMVC.csproj.AssemblyReference.cache
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\DemoMVC.csproj.Up2Date
 D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\obj\Debug\net10.0\compressed\nh9po7fu0c-{0}-czdeq39l1f-czdeq39l1f.gz
+D:\Users\OSAKA\Downloads\PTPMQL\DemoMVC\bin\Debug\net10.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll

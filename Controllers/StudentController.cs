@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DemoMVC.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using DemoMVC.Models;
 
 namespace DemoMVC.Controllers
 {
+    [Authorize]
     public class StudentController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -153,13 +155,15 @@ namespace DemoMVC.Controllers
         }
 
         // GET: Student/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-          ViewData["MajorId"] = new SelectList(_context.Majors.OrderBy(m => m.MajorCode),"MajorId","MajorName");
-          return View();
+            ViewData["MajorId"] = new SelectList(_context.Majors.OrderBy(m => m.MajorCode), "MajorId", "MajorName");
+            return View();
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAjax(
             [Bind("FullName,Address,Email,AdmissionYear,TrainingSystemCode,MajorId")]
@@ -202,65 +206,60 @@ namespace DemoMVC.Controllers
         }
 
         // POST: Student/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        
-    [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Create(
-    [Bind("FullName,Address,Email,AdmissionYear,TrainingSystemCode,MajorId")]
-    Student student)
-{
-    // Mã sinh viên và mã ngành do hệ thống tạo/lấy từ khoa
-    ModelState.Remove(nameof(Student.StudentCode));
-    ModelState.Remove(nameof(Student.MajorCode));
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(
+            [Bind("FullName,Address,Email,AdmissionYear,TrainingSystemCode,MajorId")]
+            Student student)
+        {
+            ModelState.Remove(nameof(Student.StudentCode));
+            ModelState.Remove(nameof(Student.MajorCode));
 
-    // Kiểm tra khoa được chọn
-    Major? major = null;
+            Major? major = null;
 
-    if (student.MajorId.HasValue)
-    {
-        major = await _context.Majors
-            .FirstOrDefaultAsync(m => m.MajorId == student.MajorId.Value);
-    }
+            if (student.MajorId.HasValue)
+            {
+                major = await _context.Majors
+                    .FirstOrDefaultAsync(m => m.MajorId == student.MajorId.Value);
+            }
 
-    if (major == null)
-    {
-        ModelState.AddModelError(
-            nameof(Student.MajorId),
-            "Vui lòng chọn một khoa hợp lệ."
-        );
-    }
+            if (major == null)
+            {
+                ModelState.AddModelError(
+                    nameof(Student.MajorId),
+                    "Vui lòng chọn một khoa hợp lệ."
+                );
+            }
 
-    if (ModelState.IsValid && major != null)
-    {
-        // Lấy mã ngành từ bảng Majors
-        student.MajorCode = major.MajorCode;
+            if (ModelState.IsValid && major != null)
+            {
+                student.MajorCode = major.MajorCode;
 
-        // Sinh mã sinh viên tự động
-        student.StudentCode = await _codeGenerator.GenerateAsync(
-            student.AdmissionYear,
-            student.TrainingSystemCode,
-            student.MajorCode
-        );
+                student.StudentCode = await _codeGenerator.GenerateAsync(
+                    student.AdmissionYear,
+                    student.TrainingSystemCode,
+                    student.MajorCode
+                );
 
-        _context.Students.Add(student);
-        await _context.SaveChangesAsync();
+                _context.Students.Add(student);
+                await _context.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
-    }
+                return RedirectToAction(nameof(Index));
+            }
 
-    ViewData["MajorId"] = new SelectList(
-        _context.Majors.OrderBy(m => m.MajorCode),
-        "MajorId",
-        "MajorName",
-        student.MajorId
-    );
+            ViewData["MajorId"] = new SelectList(
+                _context.Majors.OrderBy(m => m.MajorCode),
+                "MajorId",
+                "MajorName",
+                student.MajorId
+            );
 
-    return View(student);
-}
+            return View(student);
+        }
 
         // GET: Student/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -278,6 +277,7 @@ public async Task<IActionResult> Create(
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditAjax(int id, Student student)
         {
@@ -339,9 +339,8 @@ public async Task<IActionResult> Create(
         }
 
         // POST: Student/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("StudentId,FullName,Address,Email,AdmissionYear,TrainingSystemCode,MajorId")] Student student)
         {
@@ -401,6 +400,7 @@ public async Task<IActionResult> Create(
         }
 
         // GET: Student/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -420,6 +420,7 @@ public async Task<IActionResult> Create(
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAjax(int id)
         {
@@ -437,6 +438,7 @@ public async Task<IActionResult> Create(
 
         // POST: Student/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
@@ -456,4 +458,3 @@ public async Task<IActionResult> Create(
         }
     }
 }
-

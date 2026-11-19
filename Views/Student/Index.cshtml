@@ -2,68 +2,72 @@
 
 @{
     ViewData["Title"] = "Danh sách sinh viên";
+    var isAdmin = User.IsInRole("Admin");
 }
 
 <h1>Danh sách sinh viên</h1>
 
 <div class="row g-4 mb-4">
-    <div class="col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <strong id="studentFormTitle">Thêm sinh viên</strong>
-            </div>
-            <div class="card-body">
-                <form id="studentForm">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" id="studentId" name="StudentId" value="" />
+    @if (isAdmin)
+    {
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <strong id="studentFormTitle">Thêm sinh viên</strong>
+                </div>
+                <div class="card-body">
+                    <form id="studentForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="studentId" name="StudentId" value="" />
 
-                    <div class="mb-3">
-                        <label class="form-label">Họ và tên</label>
-                        <input type="text" name="FullName" class="form-control" required />
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Họ và tên</label>
+                            <input type="text" name="FullName" class="form-control" required />
+                        </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Địa chỉ</label>
-                        <input type="text" name="Address" class="form-control" required />
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Địa chỉ</label>
+                            <input type="text" name="Address" class="form-control" required />
+                        </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="Email" class="form-control" required />
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="Email" class="form-control" required />
+                        </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Năm nhập học</label>
-                        <input type="number" name="AdmissionYear" min="2000" max="2099" class="form-control" required />
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Năm nhập học</label>
+                            <input type="number" name="AdmissionYear" min="2000" max="2099" class="form-control" required />
+                        </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Mã hệ đào tạo</label>
-                        <input type="text" name="TrainingSystemCode" maxlength="2" class="form-control" required />
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mã hệ đào tạo</label>
+                            <input type="text" name="TrainingSystemCode" maxlength="2" class="form-control" required />
+                        </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Ngành</label>
-                        <select name="MajorId" class="form-select" required>
-                            <option value="">-- Chọn ngành --</option>
-                            @foreach (var item in (IEnumerable<SelectListItem>)ViewData["MajorId"]!)
-                            {
-                                <option value="@item.Value">@item.Text</option>
-                            }
-                        </select>
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ngành</label>
+                            <select name="MajorId" class="form-select" required>
+                                <option value="">-- Chọn ngành --</option>
+                                @foreach (var item in (IEnumerable<SelectListItem>)ViewData["MajorId"]!)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary" id="saveStudentBtn">Lưu</button>
-                        <button type="button" class="btn btn-secondary d-none" id="cancelEditBtn">Hủy</button>
-                    </div>
-                    <div id="studentFormError" class="text-danger mt-2"></div>
-                </form>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" id="saveStudentBtn">Lưu</button>
+                            <button type="button" class="btn btn-secondary d-none" id="cancelEditBtn">Hủy</button>
+                        </div>
+                        <div id="studentFormError" class="text-danger mt-2"></div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+    }
 
-    <div class="col-lg-8">
+    <div class="@(isAdmin ? "col-lg-8" : "col-12")">
         <div class="card shadow-sm">
             <div class="card-body">
                 <form id="searchForm" class="row g-3 align-items-end mb-3">
@@ -111,17 +115,11 @@
 
 @section Scripts {
     <script>
+        const isAdmin = @Json.Serialize(isAdmin);
         const studentTableUrl = '@Url.Action("ListPartial", "Student")';
         const createStudentUrl = '@Url.Action("CreateAjax", "Student")';
         const editStudentUrl = '@Url.Action("EditAjax", "Student")';
         const deleteStudentUrl = '@Url.Action("DeleteAjax", "Student")';
-
-        function getSearchData() {
-            const form = $('#searchForm');
-            const data = form.serialize();
-            const pageNumber = $('input[name="pageNumber"]', form).val();
-            return data + '&pageNumber=1';
-        }
 
         function refreshTable() {
             const searchData = $('#searchForm').serialize();
@@ -166,86 +164,87 @@
             });
         });
 
-        function clearStudentForm() {
-            $('#studentForm')[0].reset();
-            $('#studentId').val('');
-            $('#studentFormTitle').text('Thêm sinh viên');
-            $('#saveStudentBtn').text('Lưu');
-            $('#cancelEditBtn').addClass('d-none');
-            $('#studentFormError').text('');
-        }
-
-        $('#cancelEditBtn').on('click', function () {
-            clearStudentForm();
-        });
-
-        $('#studentForm').on('submit', function (e) {
-            e.preventDefault();
-            const id = $('#studentId').val();
-            const formData = $(this).serialize();
-            const url = id ? editStudentUrl + '?id=' + id : createStudentUrl;
-            const type = id ? 'POST' : 'POST';
-
-            $.ajax({
-                url: url,
-                type: type,
-                data: formData,
-                success: function (response) {
-                    if (response.success) {
-                        clearStudentForm();
-                        refreshTable();
-                        alert(response.message);
-                    } else {
-                        $('#studentFormError').text(response.message || 'Có lỗi xảy ra.');
-                    }
-                },
-                error: function (xhr) {
-                    let message = 'Có lỗi xảy ra khi lưu dữ liệu.';
-                    if (!id && xhr.responseJSON && xhr.responseJSON.errors && xhr.responseJSON.errors.length) {
-                        message = xhr.responseJSON.errors.join('\n');
-                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
-                    }
-                    $('#studentFormError').text(message);
-                }
-            });
-        });
-
-        $(document).on('click', '.btn-edit', function () {
-            const row = $(this).closest('tr');
-            $('#studentId').val(row.data('id'));
-            $('input[name="FullName"]').val(row.data('fullname'));
-            $('input[name="Address"]').val(row.data('address'));
-            $('input[name="Email"]').val(row.data('email'));
-            $('input[name="AdmissionYear"]').val(row.data('admissionyear'));
-            $('input[name="TrainingSystemCode"]').val(row.data('trainingsystemcode'));
-            $('select[name="MajorId"]').val(row.data('majorid'));
-            $('#studentFormTitle').text('Sửa sinh viên');
-            $('#saveStudentBtn').text('Cập nhật');
-            $('#cancelEditBtn').removeClass('d-none');
-            $('#studentFormError').text('');
-        });
-
-        $(document).on('click', '.btn-delete', function () {
-            const id = $(this).data('id');
-            if (!confirm('Bạn có chắc muốn xóa sinh viên này?')) {
-                return;
+        if (isAdmin) {
+            function clearStudentForm() {
+                $('#studentForm')[0].reset();
+                $('#studentId').val('');
+                $('#studentFormTitle').text('Thêm sinh viên');
+                $('#saveStudentBtn').text('Lưu');
+                $('#cancelEditBtn').addClass('d-none');
+                $('#studentFormError').text('');
             }
 
-            $.ajax({
-                url: deleteStudentUrl,
-                type: 'POST',
-                data: { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
-                success: function (response) {
-                    if (response.success) {
-                        refreshTable();
-                        alert(response.message);
-                    }
-                },
-                error: function (xhr) {
-                    alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Xóa sinh viên thất bại.');
-                }
+            $('#cancelEditBtn').on('click', function () {
+                clearStudentForm();
             });
-        });
+
+            $('#studentForm').on('submit', function (e) {
+                e.preventDefault();
+                const id = $('#studentId').val();
+                const formData = $(this).serialize();
+                const url = id ? editStudentUrl + '?id=' + id : createStudentUrl;
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            clearStudentForm();
+                            refreshTable();
+                            alert(response.message);
+                        } else {
+                            $('#studentFormError').text(response.message || 'Có lỗi xảy ra.');
+                        }
+                    },
+                    error: function (xhr) {
+                        let message = 'Có lỗi xảy ra khi lưu dữ liệu.';
+                        if (!id && xhr.responseJSON && xhr.responseJSON.errors && xhr.responseJSON.errors.length) {
+                            message = xhr.responseJSON.errors.join('\n');
+                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        $('#studentFormError').text(message);
+                    }
+                });
+            });
+
+            $(document).on('click', '.btn-edit', function () {
+                const row = $(this).closest('tr');
+                $('#studentId').val(row.data('id'));
+                $('input[name="FullName"]').val(row.data('fullname'));
+                $('input[name="Address"]').val(row.data('address'));
+                $('input[name="Email"]').val(row.data('email'));
+                $('input[name="AdmissionYear"]').val(row.data('admissionyear'));
+                $('input[name="TrainingSystemCode"]').val(row.data('trainingsystemcode'));
+                $('select[name="MajorId"]').val(row.data('majorid'));
+                $('#studentFormTitle').text('Sửa sinh viên');
+                $('#saveStudentBtn').text('Cập nhật');
+                $('#cancelEditBtn').removeClass('d-none');
+                $('#studentFormError').text('');
+            });
+
+            $(document).on('click', '.btn-delete', function () {
+                const id = $(this).data('id');
+                if (!confirm('Bạn có chắc muốn xóa sinh viên này?')) {
+                    return;
+                }
+
+                $.ajax({
+                    url: deleteStudentUrl,
+                    type: 'POST',
+                    data: { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                    success: function (response) {
+                        if (response.success) {
+                            refreshTable();
+                            alert(response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Xóa sinh viên thất bại.');
+                    }
+                });
+            });
+        }
     </script>
 }

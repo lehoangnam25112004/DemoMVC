@@ -1,10 +1,66 @@
-
+using Microsoft.AspNetCore.Identity;
 using DemoMVC.Models;
 
 namespace DemoMVC.Data
 {
     public static class DbInitializer
     {
+        public static async Task SeedAsync(IServiceProvider serviceProvider)
+        {
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+            // --- PHẦN 1: GIỮ NGUYÊN SEED MAJOR VÀ 200 STUDENT CŨ ---
+            Initialize(context);
+
+            // --- PHẦN 2: KHỞI TẠO ROLE VÀ TÀI KHOẢN MẶC ĐỊNH ---
+            string[] roles = { "Admin", "User" };
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
+
+            // Tạo tài khoản Admin mặc định
+            var adminEmail = "admin@gmail.com";
+            if (await userManager.FindByEmailAsync(adminEmail) == null)
+            {
+                var admin = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FullName = "Quản Trị Viên",
+                    EmailConfirmed = true
+                };
+                var result = await userManager.CreateAsync(admin, "Admin@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(admin, "Admin");
+                }
+            }
+
+            // Tạo tài khoản User mặc định
+            var userEmail = "user@gmail.com";
+            if (await userManager.FindByEmailAsync(userEmail) == null)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = userEmail,
+                    Email = userEmail,
+                    FullName = "Người Dùng Thường",
+                    EmailConfirmed = true
+                };
+                var result = await userManager.CreateAsync(user, "User@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(user, "User");
+                }
+            }
+        }
+
         public static void Initialize(ApplicationDbContext context)
         {
             context.Database.EnsureCreated();

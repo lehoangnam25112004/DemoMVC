@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Thông báo";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Thông báo</h4>
+            </div>
+            <div class="card-body">
+                <p class="mb-4">@(ViewBag.Message ?? "Thao tác đã hoàn tất.")</p>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Đi tới trang đăng nhập</a>
+            </div>
+        </div>
+    </div>
+</div>

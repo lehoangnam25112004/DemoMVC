@@ -1,5 +1,9 @@
 @model DemoMVC.Models.StudentIndexViewModel
 
+@{
+    var isAdmin = User.IsInRole("Admin");
+}
+
 @if (Model.Items.Any())
 {
     <div class="text-muted mb-3">
@@ -18,7 +22,10 @@
                     <th>Mã hệ đào tạo</th>
                     <th>Mã ngành</th>
                     <th>Ngành</th>
-                    <th style="width: 170px;">Thao tác</th>
+                    @if (isAdmin)
+                    {
+                        <th style="width: 170px;">Thao tác</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -40,10 +47,13 @@
                         <td>@item.TrainingSystemCode</td>
                         <td>@item.MajorCode</td>
                         <td>@(item.Major != null ? item.Major.MajorName : "")</td>
-                        <td>
-                            <button type="button" class="btn btn-sm btn-warning btn-edit" data-id="@item.StudentId">Sửa</button>
-                            <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@item.StudentId">Xóa</button>
-                        </td>
+                        @if (isAdmin)
+                        {
+                            <td>
+                                <button type="button" class="btn btn-sm btn-warning btn-edit" data-id="@item.StudentId">Sửa</button>
+                                <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@item.StudentId">Xóa</button>
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>
