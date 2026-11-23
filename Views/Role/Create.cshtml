@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Thêm Role mới";
+}
+
+<h2>Thêm Role mới</h2>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label for="roleName" class="form-label">Tên Role</label>
+        <input type="text" id="roleName" name="roleName" class="form-control" placeholder="Ví dụ: Staff, AcademicManager, Student" />
+    </div>
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>

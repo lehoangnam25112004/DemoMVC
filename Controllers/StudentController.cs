@@ -155,7 +155,6 @@ namespace DemoMVC.Controllers
         }
 
         // GET: Student/Create
-        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             ViewData["MajorId"] = new SelectList(_context.Majors.OrderBy(m => m.MajorCode), "MajorId", "MajorName");
@@ -163,7 +162,6 @@ namespace DemoMVC.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAjax(
             [Bind("FullName,Address,Email,AdmissionYear,TrainingSystemCode,MajorId")]
@@ -207,7 +205,6 @@ namespace DemoMVC.Controllers
 
         // POST: Student/Create
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             [Bind("FullName,Address,Email,AdmissionYear,TrainingSystemCode,MajorId")]
@@ -259,7 +256,6 @@ namespace DemoMVC.Controllers
         }
 
         // GET: Student/Edit/5
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -277,7 +273,6 @@ namespace DemoMVC.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditAjax(int id, Student student)
         {
@@ -340,7 +335,6 @@ namespace DemoMVC.Controllers
 
         // POST: Student/Edit/5
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("StudentId,FullName,Address,Email,AdmissionYear,TrainingSystemCode,MajorId")] Student student)
         {
@@ -400,7 +394,6 @@ namespace DemoMVC.Controllers
         }
 
         // GET: Student/Delete/5
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -420,7 +413,6 @@ namespace DemoMVC.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAjax(int id)
         {
@@ -438,7 +430,6 @@ namespace DemoMVC.Controllers
 
         // POST: Student/Delete/5
         [HttpPost, ActionName("Delete")]
-        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

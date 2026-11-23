@@ -1,19 +1,67 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using DemoMVC.Data
+@using DemoMVC.Models
+@inject ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
 @model DemoMVC.Models.StudentIndexViewModel
 
 @{
     ViewData["Title"] = "Danh sách sinh viên";
-    var isAdmin = User.IsInRole("Admin");
+
+    var allowedActions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        if (User.IsInRole("Admin"))
+        {
+            allowedActions.UnionWith(new[]
+            {
+                "Index", "Details", "Create", "CreateAjax", "Edit", "EditAjax", "Delete", "DeleteAjax", "DeleteConfirmed", "ListPartial"
+            });
+        }
+        else
+        {
+            var currentUser = await UserManager.GetUserAsync(User);
+            if (currentUser != null)
+            {
+                var roleNames = await UserManager.GetRolesAsync(currentUser);
+                foreach (var roleName in roleNames)
+                {
+                    var role = await RoleManager.FindByNameAsync(roleName);
+                    if (role != null)
+                    {
+                        var perms = await DbContext.RolePermissions
+                            .Where(p => p.RoleId == role.Id && p.IsAllowed && p.ControllerName == "Student")
+                            .Select(p => p.ActionName)
+                            .ToListAsync();
+
+                        foreach (var act in perms)
+                        {
+                            allowedActions.Add(act);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bool canCreate = allowedActions.Contains("Create") || allowedActions.Contains("CreateAjax");
+    bool canEdit = allowedActions.Contains("Edit") || allowedActions.Contains("EditAjax");
+    bool canDelete = allowedActions.Contains("Delete") || allowedActions.Contains("DeleteAjax") || allowedActions.Contains("DeleteConfirmed");
+    bool canManageForm = canCreate || canEdit;
 }
 
 <h1>Danh sách sinh viên</h1>
 
 <div class="row g-4 mb-4">
-    @if (isAdmin)
+    @if (canManageForm)
     {
         <div class="col-lg-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <strong id="studentFormTitle">Thêm sinh viên</strong>
+                    <strong id="studentFormTitle">@(canCreate ? "Thêm sinh viên" : "Sửa sinh viên")</strong>
                 </div>
                 <div class="card-body">
                     <form id="studentForm">
@@ -67,7 +115,7 @@
         </div>
     }
 
-    <div class="@(isAdmin ? "col-lg-8" : "col-12")">
+    <div class="@(canManageForm ? "col-lg-8" : "col-12")">
         <div class="card shadow-sm">
             <div class="card-body">
                 <form id="searchForm" class="row g-3 align-items-end mb-3">
@@ -115,7 +163,10 @@
 
 @section Scripts {
     <script>
-        const isAdmin = @Json.Serialize(isAdmin);
+        const canCreate = @Json.Serialize(canCreate);
+        const canEdit = @Json.Serialize(canEdit);
+        const canDelete = @Json.Serialize(canDelete);
+        const canManageForm = @Json.Serialize(canManageForm);
         const studentTableUrl = '@Url.Action("ListPartial", "Student")';
         const createStudentUrl = '@Url.Action("CreateAjax", "Student")';
         const editStudentUrl = '@Url.Action("EditAjax", "Student")';
@@ -164,11 +215,11 @@
             });
         });
 
-        if (isAdmin) {
+        if (canManageForm) {
             function clearStudentForm() {
                 $('#studentForm')[0].reset();
                 $('#studentId').val('');
-                $('#studentFormTitle').text('Thêm sinh viên');
+                $('#studentFormTitle').text(canCreate ? 'Thêm sinh viên' : 'Sửa sinh viên');
                 $('#saveStudentBtn').text('Lưu');
                 $('#cancelEditBtn').addClass('d-none');
                 $('#studentFormError').text('');
@@ -181,13 +232,21 @@
             $('#studentForm').on('submit', function (e) {
                 e.preventDefault();
                 const id = $('#studentId').val();
-                const formData = $(this).serialize();
-                const url = id ? editStudentUrl + '?id=' + id : createStudentUrl;
+                const targetUrl = id ? editStudentUrl + '?id=' + id : createStudentUrl;
+
+                if (!id && !canCreate) {
+                    $('#studentFormError').text('Bạn không có quyền thêm sinh viên.');
+                    return;
+                }
+                if (id && !canEdit) {
+                    $('#studentFormError').text('Bạn không có quyền cập nhật sinh viên.');
+                    return;
+                }
 
                 $.ajax({
-                    url: url,
+                    url: targetUrl,
                     type: 'POST',
-                    data: formData,
+                    data: $(this).serialize(),
                     success: function (response) {
                         if (response.success) {
                             clearStudentForm();
@@ -208,7 +267,9 @@
                     }
                 });
             });
+        }
 
+        if (canEdit) {
             $(document).on('click', '.btn-edit', function () {
                 const row = $(this).closest('tr');
                 $('#studentId').val(row.data('id'));
@@ -223,7 +284,9 @@
                 $('#cancelEditBtn').removeClass('d-none');
                 $('#studentFormError').text('');
             });
+        }
 
+        if (canDelete) {
             $(document).on('click', '.btn-delete', function () {
                 const id = $(this).data('id');
                 if (!confirm('Bạn có chắc muốn xóa sinh viên này?')) {

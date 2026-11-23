@@ -147,6 +147,37 @@ namespace DemoMVC.Migrations
                     b.ToTable("Persons");
                 });
 
+            modelBuilder.Entity("DemoMVC.Models.RolePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ActionName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ControllerName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsAllowed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId", "ControllerName", "ActionName")
+                        .IsUnique();
+
+                    b.ToTable("RolePermission");
+                });
+
             modelBuilder.Entity("DemoMVC.Models.Student", b =>
                 {
                     b.Property<int>("StudentId")
@@ -329,6 +360,17 @@ namespace DemoMVC.Migrations
                         .HasForeignKey("DepartmentId");
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("DemoMVC.Models.RolePermission", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("DemoMVC.Models.Student", b =>

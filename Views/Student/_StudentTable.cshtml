@@ -1,7 +1,53 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using DemoMVC.Data
+@using DemoMVC.Models
+@inject ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
 @model DemoMVC.Models.StudentIndexViewModel
 
 @{
-    var isAdmin = User.IsInRole("Admin");
+    var allowedActions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        if (User.IsInRole("Admin"))
+        {
+            allowedActions.UnionWith(new[]
+            {
+                "Index", "Details", "Create", "CreateAjax", "Edit", "EditAjax", "Delete", "DeleteAjax", "DeleteConfirmed", "ListPartial"
+            });
+        }
+        else
+        {
+            var currentUser = await UserManager.GetUserAsync(User);
+            if (currentUser != null)
+            {
+                var roleNames = await UserManager.GetRolesAsync(currentUser);
+                foreach (var roleName in roleNames)
+                {
+                    var role = await RoleManager.FindByNameAsync(roleName);
+                    if (role != null)
+                    {
+                        var perms = await DbContext.RolePermissions
+                            .Where(p => p.RoleId == role.Id && p.IsAllowed && p.ControllerName == "Student")
+                            .Select(p => p.ActionName)
+                            .ToListAsync();
+
+                        foreach (var act in perms)
+                        {
+                            allowedActions.Add(act);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bool canEdit = allowedActions.Contains("Edit") || allowedActions.Contains("EditAjax");
+    bool canDelete = allowedActions.Contains("Delete") || allowedActions.Contains("DeleteAjax") || allowedActions.Contains("DeleteConfirmed");
+    bool canAction = canEdit || canDelete;
 }
 
 @if (Model.Items.Any())
@@ -22,7 +68,7 @@
                     <th>Mã hệ đào tạo</th>
                     <th>Mã ngành</th>
                     <th>Ngành</th>
-                    @if (isAdmin)
+                    @if (canAction)
                     {
                         <th style="width: 170px;">Thao tác</th>
                     }
@@ -47,11 +93,17 @@
                         <td>@item.TrainingSystemCode</td>
                         <td>@item.MajorCode</td>
                         <td>@(item.Major != null ? item.Major.MajorName : "")</td>
-                        @if (isAdmin)
+                        @if (canAction)
                         {
                             <td>
-                                <button type="button" class="btn btn-sm btn-warning btn-edit" data-id="@item.StudentId">Sửa</button>
-                                <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@item.StudentId">Xóa</button>
+                                @if (canEdit)
+                                {
+                                    <button type="button" class="btn btn-sm btn-warning btn-edit" data-id="@item.StudentId">Sửa</button>
+                                }
+                                @if (canDelete)
+                                {
+                                    <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@item.StudentId">Xóa</button>
+                                }
                             </td>
                         }
                     </tr>

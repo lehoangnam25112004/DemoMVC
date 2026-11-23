@@ -1,0 +1,38 @@
+@using DemoMVC.Models.ViewModels
+@model ManageUserRolesViewModel
+
+@{
+    ViewData["Title"] = "Cập nhật Role người dùng";
+}
+
+<h2>Cập nhật Role cho: @Model.Email</h2>
+<p class="text-muted">UserName: @Model.UserName</p>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form asp-action="Manage" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="UserId" />
+    <input type="hidden" asp-for="UserName" />
+    <input type="hidden" asp-for="Email" />
+
+    <div class="card mb-3">
+        <div class="card-header">Danh sách Role</div>
+        <div class="card-body">
+            @for (int i = 0; i < Model.Roles.Count; i++)
+            {
+                <div class="form-check mb-2">
+                    <input type="hidden" asp-for="Roles[i].RoleId" />
+                    <input type="hidden" asp-for="Roles[i].RoleName" />
+                    <input class="form-check-input" asp-for="Roles[i].IsSelected" id="role_@i" />
+                    <label class="form-check-label" for="role_@i">
+                        @Model.Roles[i].RoleName
+                    </label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>

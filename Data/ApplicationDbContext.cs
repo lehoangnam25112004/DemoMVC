@@ -16,9 +16,18 @@ namespace DemoMVC.Data
 
         public DbSet<Major> Majors { get; set; }
 
+        public DbSet<RolePermission> RolePermissions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<RolePermission>(entity =>
+            {
+                entity.ToTable("RolePermission");
+                entity.HasIndex(p => new { p.RoleId, p.ControllerName, p.ActionName })
+                      .IsUnique();
+            });
         }
     }
 }

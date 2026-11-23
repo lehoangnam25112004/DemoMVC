@@ -1,4 +1,5 @@
 using DemoMVC.Data;
+using DemoMVC.Filters;
 using DemoMVC.Models;
 using DemoMVC.Services;
 using Microsoft.AspNetCore.Identity;
@@ -59,7 +60,13 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // 4. Đăng ký các dịch vụ của ứng dụng
-builder.Services.AddControllersWithViews();
+builder.Services.AddMemoryCache();
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<DynamicPermissionFilter>();
+});
+
 builder.Services.AddScoped<StudentCodeGenerator>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<DemoMVC.Services.IEmailSender, EmailSender>();
