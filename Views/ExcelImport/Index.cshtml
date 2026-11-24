@@ -1,0 +1,163 @@
+@using DemoMVC.Models.ViewModels
+@model ExcelImportViewModel
+
+@{
+    ViewData["Title"] = "Nhập dữ liệu từ Excel";
+    bool hasPreview = Model.PreviewRows.Any();
+}
+
+<h2>Nhập dữ liệu từ Excel</h2>
+<p class="text-muted">Chỉ áp dụng cho các bảng dữ liệu nghiệp vụ (Sinh viên, Ngành đào tạo — loại trừ bảng Identity).</p>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+    @if (TempData["ImportedTable"] is string importedTable)
+    {
+        <a asp-controller="@importedTable" asp-action="Index" class="btn btn-outline-primary mb-3">Xem danh sách dữ liệu đã nhập</a>
+    }
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form asp-action="Preview" method="post" enctype="multipart/form-data" class="row g-3">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger col-12"></div>
+
+            <div class="col-md-4">
+                <label asp-for="SelectedTable" class="form-label"></label>
+                <select asp-for="SelectedTable" class="form-select" id="tableSelect">
+                    @foreach (var item in Model.AvailableTables)
+                    {
+                        <option value="@item.Key" selected="@(Model.SelectedTable == item.Key ? "selected" : null)">
+                            @item.Value
+                        </option>
+                    }
+                </select>
+                <span asp-validation-for="SelectedTable" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="ImportMode" class="form-label"></label>
+                <select asp-for="ImportMode" class="form-select">
+                    <option value="@ExcelImportMode.Append">Ghi bổ sung (Append - giữ nguyên bản ghi trùng mã)</option>
+                    <option value="@ExcelImportMode.Overwrite">Ghi đè (Overwrite - cập nhật bản ghi trùng mã)</option>
+                </select>
+                <span asp-validation-for="ImportMode" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="ExcelFile" class="form-label"></label>
+                <input asp-for="ExcelFile" type="file" accept=".xlsx" class="form-control" />
+                <span asp-validation-for="ExcelFile" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Xem trước &amp; Kiểm tra dữ liệu</button>
+                <a id="downloadTemplateBtn"
+                   asp-action="DownloadTemplate"
+                   asp-route-table="@Model.SelectedTable"
+                   class="btn btn-outline-secondary">
+                    Tải file mẫu (.xlsx)
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (hasPreview)
+{
+    <div class="card shadow-sm">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <strong>Xem trước file: @Model.UploadedFileName</strong>
+            </div>
+            <div>
+                <span class="badge bg-success">Hợp lệ: @Model.ValidRowsCount</span>
+                <span class="badge bg-warning text-dark">Trùng mã: @Model.DuplicateRowsCount</span>
+                <span class="badge bg-danger">Lỗi: @Model.InvalidRowsCount</span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            @if (Model.ImportMode == ExcelImportMode.Overwrite)
+            {
+                <div class="alert alert-warning">
+                    <strong>Xác nhận Ghi đè (Overwrite):</strong> Các dòng trùng mã trên bảng <strong>@Model.SelectedTable</strong> sẽ bị cập nhật theo dữ liệu trong file Excel sau khi bạn bấm xác nhận.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <strong>Xác nhận Ghi bổ sung (Append):</strong> Hệ thống chỉ thêm các dòng hợp lệ chưa tồn tại; các dòng trùng mã sẽ được bỏ qua.
+                </div>
+            }
+
+            <div class="table-responsive mb-3">
+                <table class="table table-bordered table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Dòng</th>
+                            <th style="width: 210px;">Trạng thái</th>
+                            <th>Lỗi / Ghi chú</th>
+                            <th>Dữ liệu đọc được</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.PreviewRows)
+                        {
+                            var rowClass = !row.IsValid
+                                ? "table-danger"
+                                : (row.IsDuplicate ? "table-warning" : "");
+                            <tr class="@rowClass">
+                                <td>@row.RowNumber</td>
+                                <td><strong>@row.StatusText</strong></td>
+                                <td>@(string.IsNullOrWhiteSpace(row.ErrorMessage) ? "-" : row.ErrorMessage)</td>
+                                <td>@string.Join(" | ", row.Values.Select(kv => $"{kv.Key}: {kv.Value}"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.ValidRowsCount > 0)
+            {
+                var confirmText = Model.ImportMode == ExcelImportMode.Overwrite
+                    ? $"Xác nhận GHI ĐÈ dữ liệu vào bảng {Model.SelectedTable}?"
+                    : $"Xác nhận GHI BỔ SUNG dữ liệu vào bảng {Model.SelectedTable}?";
+
+                <form asp-action="ConfirmImport" method="post" onsubmit="return confirm('@confirmText');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="SelectedTable" />
+                    <input type="hidden" asp-for="ImportMode" />
+                    <input type="hidden" asp-for="StagedPayloadJson" />
+
+                    <button type="submit" class="btn btn-success">
+                        Xác nhận nhập dữ liệu (@Model.ValidRowsCount dòng hợp lệ)
+                    </button>
+                    <a asp-action="Index" asp-route-table="@Model.SelectedTable" class="btn btn-secondary">Hủy</a>
+                </form>
+            }
+            else
+            {
+                <div class="text-danger fw-semibold">
+                    Không có dòng hợp lệ nào để nhập. Vui lòng kiểm tra lại file Excel và tải lên lại.
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $('#tableSelect').on('change', function () {
+            const selected = $(this).val();
+            $('#downloadTemplateBtn').attr('href', '@Url.Action("DownloadTemplate", "ExcelImport")?table=' + encodeURIComponent(selected));
+        });
+    </script>
+}

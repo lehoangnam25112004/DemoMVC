@@ -3,14 +3,24 @@ using DemoMVC.Filters;
 using DemoMVC.Models;
 using DemoMVC.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Kết nối SQLite DbContext
+var sqliteConnection = new SqliteConnectionStringBuilder(
+    builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found."));
+if (!string.IsNullOrWhiteSpace(sqliteConnection.DataSource)
+    && sqliteConnection.DataSource != ":memory:"
+    && sqliteConnection.Mode != SqliteOpenMode.Memory)
+{
+    sqliteConnection.DataSource = Path.GetFullPath(
+        sqliteConnection.DataSource, builder.Environment.ContentRootPath);
+}
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.")));
+    options.UseSqlite(sqliteConnection.ToString()));
 
 // 2. Đăng ký ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -68,10 +78,12 @@ builder.Services.AddControllersWithViews(options =>
 });
 
 builder.Services.AddScoped<StudentCodeGenerator>();
+builder.Services.AddScoped<ExcelImportService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<DemoMVC.Services.IEmailSender, EmailSender>();
 
 var app = builder.Build();
+app.Logger.LogInformation("SQLite database: {DatabasePath}", sqliteConnection.DataSource);
 
 // 5. Tự động chạy Migration và Seed dữ liệu (Major, Student, Roles, Admin/User) 1 lần duy nhất
 using (var scope = app.Services.CreateScope())
